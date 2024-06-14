@@ -1,6 +1,5 @@
 <script>
 	import Button from '$lib/shadcn/components/ui/button/button.svelte';
-	import 'iconify-icon';
 </script>
 
 <h1>Welcome to SvelteKit</h1>
