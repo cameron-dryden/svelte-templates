@@ -4,5 +4,3 @@
 </script>
 
 <slot></slot>
-
-<style></style>
