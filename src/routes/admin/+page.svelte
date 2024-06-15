@@ -2,11 +2,11 @@
 	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
 
-	export let data: PageData;
+	// export let data: PageData;
 
-	onMount(() => {
-		console.log(data);
-	});
+	// onMount(() => {
+	// 	console.log(data);
+	// });
 </script>
 
 <div class="flex h-screen w-full items-center justify-center">
