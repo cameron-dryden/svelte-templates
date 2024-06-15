@@ -1,6 +1,6 @@
 import type { PageLoad } from './$types';
 
-export const load = (async () => {
+export const load = (async ({ data }) => {
 	console.log('This happens in page.ts');
-	return {};
+	return { ...data, someTest: 'test' };
 }) satisfies PageLoad;
