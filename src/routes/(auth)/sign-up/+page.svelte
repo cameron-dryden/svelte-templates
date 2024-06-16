@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import { Button } from '$lib/shadcn/components/ui/button';
 	import { Input } from '$lib/shadcn/components/ui/input';
 	import { Label } from '$lib/shadcn/components/ui/label';
 
 	let isLoading = false;
-	async function onSubmit() {
+	async function onSubmit(form: SubmitEvent) {
 		isLoading = true;
 
 		setTimeout(() => {
@@ -59,6 +58,7 @@
 								id="email"
 								placeholder="name@example.com"
 								type="email"
+								name="email"
 								autocapitalize="none"
 								autocomplete="email"
 								autocorrect="off"
