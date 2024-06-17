@@ -1,9 +1,8 @@
 import type { LayoutServerLoad } from './$types';
 
-export const load = (async ({ locals: { safeGetSession } }) => {
-	const { session } = await safeGetSession();
-	console.log('[src/routes/+layout.server.ts]', 'Loaded session for Server');
+export const load: LayoutServerLoad = async ({ locals: { session } }) => {
+	// Supabase config
 	return {
 		session
 	};
-}) satisfies LayoutServerLoad;
+};

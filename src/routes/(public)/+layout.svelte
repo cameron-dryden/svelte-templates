@@ -2,7 +2,9 @@
 	import { Button } from '$lib/shadcn/components/ui/button';
 	import type { LayoutData } from './$types';
 
-	// export let data: LayoutData;
+	export let data: LayoutData;
+
+	$: ({ user, supabase } = data);
 </script>
 
 <!-- Navbar -->
@@ -14,12 +16,22 @@
 		<!-- Links -->
 		<div class="flex-1">
 			<Button class="text-primary-foreground" variant="link" href="/">Home</Button>
-			<Button class="text-primary-foreground" variant="link" href="/about">About</Button>
-			<Button class="text-primary-foreground" variant="link" href="/contact">Contact</Button>
+			<Button
+				class="text-primary-foreground"
+				variant="link"
+				on:click={() => {
+					supabase.auth.signOut();
+				}}>Sign Out</Button
+			>
+			<Button class="text-primary-foreground" variant="link" href="/admin">Admin</Button>
 		</div>
 
-		<!-- Sign Up -->
-		<Button variant="ghost" class="text-primary-foreground" href="/sign-up">Sign Up</Button>
+		{#if user}
+			<Button variant="ghost" class="text-primary-foreground" href="/admin">Admin</Button>
+		{:else}
+			<!-- Sign Up -->
+			<Button variant="ghost" class="text-primary-foreground" href="/sign-up">Sign Up</Button>
+		{/if}
 	</div>
 </div>
 

@@ -1,15 +1,11 @@
 import { createServerClient } from '@supabase/ssr';
-import { type Handle } from '@sveltejs/kit';
+import { type Handle, redirect } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
 
+// [START] Supabase config
 const supabase: Handle = async ({ event, resolve }) => {
-	/**
-	 * Creates a Supabase client specific to this server request.
-	 *
-	 * The Supabase client gets the Auth token from the request cookies.
-	 */
 	event.locals.supabase = createServerClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
 		cookies: {
 			get: (key) => event.cookies.get(key),
@@ -22,23 +18,24 @@ const supabase: Handle = async ({ event, resolve }) => {
 		}
 	});
 
-	/**
-	 * Unlike `supabase.auth.getSession()`, which returns the session _without_
-	 * validating the JWT, this function also calls `getUser()` to validate the
-	 * JWT before returning the session.
-	 */
 	event.locals.safeGetSession = async () => {
 		const {
 			data: { session }
 		} = await event.locals.supabase.auth.getSession();
 		if (!session) {
-			return { session: null };
+			return { session: null, user: null };
 		}
 
-		return { session };
-	};
+		const {
+			data: { user },
+			error
+		} = await event.locals.supabase.auth.getUser();
+		if (error) {
+			return { session: null, user: null };
+		}
 
-	console.log('[src/hooks.server.ts]', 'Linked Client Session to Server Session');
+		return { session, user };
+	};
 
 	return resolve(event, {
 		filterSerializedResponseHeaders(name) {
@@ -46,22 +43,25 @@ const supabase: Handle = async ({ event, resolve }) => {
 		}
 	});
 };
+// [END] Supabase config
 
-// const authGuard: Handle = async ({ event, resolve }) => {
-//   const { session, user } = await event.locals.safeGetSession()
-//   event.locals.session = session
-//   event.locals.user = user
+const authGuard: Handle = async ({ event, resolve }) => {
+	const { session, user } = await event.locals.safeGetSession();
+	event.locals.session = session;
+	event.locals.user = user;
 
-//   if (!event.locals.session && event.url.pathname.startsWith('/private')) {
-//     return redirect(303, '/auth')
-//   }
+	if (!event.locals.session && event.url.pathname.startsWith('/admin')) {
+		return redirect(303, '/sign-in');
+	}
 
-//   if (event.locals.session && event.url.pathname === '/auth') {
-//     return redirect(303, '/private')
-//   }
+	if (
+		event.locals.session &&
+		(event.url.pathname === '/sign-in' || event.url.pathname === '/sign-up')
+	) {
+		return redirect(303, '/admin');
+	}
 
-//   return resolve(event)
-// }
+	return resolve(event);
+};
 
-// authGuard
-export const handle: Handle = sequence(supabase);
+export const handle: Handle = sequence(supabase, authGuard);

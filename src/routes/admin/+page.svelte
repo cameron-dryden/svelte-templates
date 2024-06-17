@@ -1,8 +1,6 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
 	import { Button } from '$lib/shadcn/components/ui/button';
-	import { invalidate } from '$app/navigation';
 
 	export let data: PageData;
 
@@ -14,6 +12,7 @@
 	<Button href="/admin/dashboard">Dashboard</Button>
 	<Button
 		on:click={() => {
+			console.log('Sign out');
 			supabase.auth.signOut();
 		}}>Sign Out</Button
 	>
