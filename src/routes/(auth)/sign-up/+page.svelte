@@ -1,22 +1,27 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
+	import { goto } from '$app/navigation';
 	import { Button } from '$lib/shadcn/components/ui/button';
 	import { Input } from '$lib/shadcn/components/ui/input';
 	import { Label } from '$lib/shadcn/components/ui/label';
+	import { toast } from 'svelte-sonner';
+	import type { ActionData } from './$types';
 
-	let isLoading = false;
-	async function onSubmit(form: SubmitEvent) {
-		isLoading = true;
+	export let form: ActionData;
 
-		setTimeout(() => {
-			isLoading = false;
-		}, 3000);
+	$: if (form) {
+		if (form.success) {
+			// ! Currently interupted by auth guard
+			toast.success('Successfully created account!');
+			setTimeout(() => goto('/admin'), 1000);
+		} else {
+			toast.error('Error while signing up', { description: form.error! });
+		}
 	}
+
+	let loading = false;
 </script>
 
-<!-- <div class="md:hidden">
-	<enhanced:img src={AuthenticationLight} alt="Authentication" class="block dark:hidden" />
-	<enhanced:img src={AuthenticationDark} alt="Authentication" class="hidden dark:block" />
-</div> -->
 <div
 	class="container relative hidden h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0"
 >
@@ -50,26 +55,35 @@
 
 			<!-- Form -->
 			<div class="grid gap-6">
-				<form on:submit|preventDefault={onSubmit}>
+				<form
+					method="POST"
+					use:enhance={() => {
+						loading = true;
+						return ({ update }) => update().finally(() => (loading = false));
+					}}
+				>
 					<div class="grid gap-2">
 						<div class="grid gap-1">
-							<Label class="sr-only" for="email">Email</Label>
+							<Label for="email">Email</Label>
 							<Input
 								id="email"
-								placeholder="name@example.com"
 								type="email"
 								name="email"
 								autocapitalize="none"
 								autocomplete="email"
 								autocorrect="off"
-								disabled={isLoading}
+								disabled={loading}
 							/>
 						</div>
-						<Button type="submit" disabled={isLoading}>
-							{#if isLoading}
-								<iconify-icon icon="line-md:loading-loop" />
+						<div class="grid gap-1">
+							<Label for="password">Password</Label>
+							<Input id="password" type="password" name="password" disabled={loading} />
+						</div>
+						<Button type="submit" disabled={loading}>
+							{#if loading}
+								<iconify-icon icon="line-md:loading-loop" class="mr-2" />
 							{/if}
-							Sign In with Email
+							Sign up with Email
 						</Button>
 					</div>
 				</form>
@@ -81,8 +95,8 @@
 						<span class="bg-background px-2 text-muted-foreground"> Or continue with </span>
 					</div>
 				</div>
-				<Button variant="outline" type="button" disabled={isLoading}>
-					{#if isLoading}
+				<Button variant="outline" type="button" disabled={loading}>
+					{#if loading}
 						<iconify-icon icon="line-md:loading-loop"></iconify-icon>
 					{:else}
 						<iconify-icon icon="mdi:github" />

@@ -3,6 +3,7 @@
 	import { onMount } from 'svelte';
 	import '../app.css';
 	import 'iconify-icon';
+	import { Toaster } from '$lib/shadcn/components/ui/sonner';
 
 	export let data;
 	$: ({ session, supabase } = data);
@@ -20,4 +21,6 @@
 	});
 </script>
 
-<slot></slot>
+<Toaster richColors position="bottom-center" />
+
+<slot />
