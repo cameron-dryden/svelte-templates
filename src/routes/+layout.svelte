@@ -1,9 +1,11 @@
 <script>
-	import { goto, invalidate } from '$app/navigation';
+	import { afterNavigate, beforeNavigate, goto, invalidate } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import '../app.css';
 	import 'iconify-icon';
 	import { Toaster } from '$lib/shadcn/components/ui/sonner';
+	import { browser } from '$app/environment';
+	import posthog from 'posthog-js';
 
 	export let data;
 	$: ({ session, supabase } = data);
@@ -11,6 +13,15 @@
 	onMount(() => {
 		// [START] Supabase config
 		const { data } = supabase.auth.onAuthStateChange((_, newSession) => {
+			// [START] PostHog config
+			// TODO: Incosistent, doesn't update after loggin in FIX
+			if (newSession) {
+				posthog.identify(newSession.user.id, { email: newSession.user.email });
+			} else {
+				posthog.reset();
+			}
+			// [END] PostHog config
+
 			if (newSession?.expires_at !== session?.expires_at) {
 				invalidate('supabase:auth');
 			}
@@ -19,6 +30,13 @@
 
 		return () => data.subscription.unsubscribe();
 	});
+
+	// [START] PostHog config
+	if (browser) {
+		beforeNavigate(() => posthog.capture('$pageleave'));
+		afterNavigate(() => posthog.capture('$pageview'));
+	}
+	// [END] PostHog config
 </script>
 
 <Toaster richColors position="bottom-center" />

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { Button } from '$lib/shadcn/components/ui/button';
+	import posthog from 'posthog-js';
 
 	export let data: PageData;
 
