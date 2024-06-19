@@ -54,10 +54,10 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 			api_host: PUBLIC_POSTHOG_API_HOST,
 			person_profiles: 'identified_only',
 			capture_pageview: false,
-			capture_pageleave: false
+			capture_pageleave: false,
 
-			// * Uncomment this line to disable autocapture events
-			// autocapture: false,
+			// * Comment this line to enable autocapture events
+			autocapture: false
 		});
 	}
 	// [END] Posthog config

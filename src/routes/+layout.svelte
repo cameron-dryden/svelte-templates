@@ -1,5 +1,5 @@
 <script>
-	import { afterNavigate, beforeNavigate, goto, invalidate } from '$app/navigation';
+	import { afterNavigate, beforeNavigate, invalidate } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import '../app.css';
 	import 'iconify-icon';
@@ -13,15 +13,6 @@
 	onMount(() => {
 		// [START] Supabase config
 		const { data } = supabase.auth.onAuthStateChange((_, newSession) => {
-			// [START] PostHog config
-			// TODO: Incosistent, doesn't update after loggin in FIX
-			if (newSession) {
-				posthog.identify(newSession.user.id, { email: newSession.user.email });
-			} else {
-				posthog.reset();
-			}
-			// [END] PostHog config
-
 			if (newSession?.expires_at !== session?.expires_at) {
 				invalidate('supabase:auth');
 			}

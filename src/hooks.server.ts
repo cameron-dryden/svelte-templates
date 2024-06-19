@@ -2,7 +2,13 @@ import { createServerClient } from '@supabase/ssr';
 import { type Handle, redirect } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 
-import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
+import {
+	PUBLIC_SUPABASE_URL,
+	PUBLIC_SUPABASE_ANON_KEY,
+	PUBLIC_POSTHOG_API_HOST,
+	PUBLIC_POSTHOG_API_KEY
+} from '$env/static/public';
+import { PostHog } from 'posthog-node';
 
 // [START] Supabase config
 const supabase: Handle = async ({ event, resolve }) => {
@@ -45,7 +51,33 @@ const supabase: Handle = async ({ event, resolve }) => {
 };
 // [END] Supabase config
 
-// TODO: Create local for posthog
+// [START] PostHog config
+const posthog: Handle = async ({ event, resolve }) => {
+	event.locals.capturePostHogEvent = async (params) => {
+		if (event.locals.user) {
+			// Capture event with logged in user
+			const posthog = new PostHog(PUBLIC_POSTHOG_API_KEY, { host: PUBLIC_POSTHOG_API_HOST });
+			posthog.capture({ distinctId: event.locals.user.id, ...params });
+			await posthog.shutdown();
+		} else {
+			// Capture event with anonymous user's distinctId
+			const phCookieKey = `ph_${PUBLIC_POSTHOG_API_KEY}_posthog`;
+			const phData = event.cookies.get(phCookieKey);
+
+			if (phData) {
+				const data = JSON.parse(phData);
+				if (data['distinct_id']) {
+					const posthog = new PostHog(PUBLIC_POSTHOG_API_KEY, { host: PUBLIC_POSTHOG_API_HOST });
+					posthog.capture({ distinctId: data['distinct_id'], ...params });
+					await posthog.shutdown();
+				}
+			}
+		}
+	};
+
+	return resolve(event);
+};
+// [END] PostHog config
 
 const authGuard: Handle = async ({ event, resolve }) => {
 	const { session, user } = await event.locals.safeGetSession();
@@ -66,4 +98,4 @@ const authGuard: Handle = async ({ event, resolve }) => {
 	return resolve(event);
 };
 
-export const handle: Handle = sequence(supabase, authGuard);
+export const handle: Handle = sequence(supabase, authGuard, posthog);
