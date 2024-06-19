@@ -6,6 +6,7 @@
 	import { Toaster } from '$lib/shadcn/components/ui/sonner';
 	import { browser } from '$app/environment';
 	import posthog from 'posthog-js';
+	import { ModeWatcher } from 'mode-watcher';
 
 	export let data;
 	$: ({ session, supabase } = data);
@@ -31,5 +32,6 @@
 </script>
 
 <Toaster richColors position="bottom-center" />
+<ModeWatcher />
 
 <slot />
